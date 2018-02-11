@@ -131,6 +131,10 @@ Grouping by type (query7) changed the structure of our data. Instead of an array
 objects, we have an object that contains arrays of objects. Let's do something
 with this new data structure.
 
+>array of objects: [{..},{..},{..}]
+>an object with arrays of object {cake: Array(3), Bread: Array(3)}
+{cake: [{..}, {..}, {..}], bread: [{..}, {..}, {..}]}
+
 Rewrite the printMenu function to receive the new structure (query7) and print
 (console.log) a menu with headings. Running printMenu(query7) should log:
 
@@ -144,7 +148,23 @@ Rye ... $5.09
 Whole Wheat ... $4.49
 ===================== */
 
-// printMenu(query7);
+//what the original function printMenu prints:
+console.log("\n>> the original menu \n");
+printMenu(bakedGoods);
+
+//update function printMenu
+printMenu = function(groupedFoodListObj) {
+  _.each(_.keys(groupedFoodListObj), function(group) {
+    console.log(group);
+    _.each(_.propertyOf(groupedFoodListObj)(group), function(foodObj) {
+      console.log(foodObj.name + ' ... $' + foodObj.price);
+    });
+  });
+};
+
+//updated version
+console.log("\n>> the changed version: \n");
+printMenu(query7);
 
 /* =====================
 Stretch Goal:
@@ -157,4 +177,43 @@ rendering process.
 
 Use _.template to render the price lines of the menu (Carrot ... $3.49).
 
+var compiled = _.template("<% print('Hello ' + epithet); %>");
+compiled({epithet: "stooge"});
+=> "Hello stooge"
+
 ===================== */
+
+/* START HERE
+//update again using _.template
+printMenu2 = function(groupedFoodListObj) {
+  _.each(_.keys(groupedFoodListObj), function(group) {
+    var foodGroup = group;
+    console.log(foodGroup);
+    var foodItems = [];
+    foodItems = _.propertyOf(groupedFoodListObj)(foodGroup);
+    console.log(foodItems);
+    var formatMenu =
+      '<% _.each( %>' +
+      '<%= foodGroup%>' +
+      '<% \', function(foodObj) { %>' +
+      '<% console.log(%>' +
+        '<%= foodObj.name %>' +
+        '... $' +
+        '<%= foodObj.price %>' +
+      '<%);}); %>';
+    _.template(formatMenu, foodItems);
+  });
+};
+
+    */
+
+  /*references:
+  http://www.kadrmasconcepts.com/blog/2012/02/20/underscore-js-template-revealed/
+  http://www.kadrmasconcepts.com/blog/2012/02/20/underscore-js-template-revealed/
+  https://stackoverflow.com/questions/22033727/iterating-through-objects-in-underscore-js-templates
+  http://underscorejs.org/#template
+  */
+
+
+//updated version
+// printMenu2(query7);
