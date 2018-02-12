@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 /* =====================
 # Lab 1, Part 1 — More Underscore
 
@@ -149,13 +151,13 @@ Whole Wheat ... $4.49
 ===================== */
 
 //what the original function printMenu prints:
-console.log("\n>> the original menu \n");
+console.log("\n>> the original menu \n\n");
 printMenu(bakedGoods);
 
 //update function printMenu
 printMenu = function(groupedFoodListObj) {
   _.each(_.keys(groupedFoodListObj), function(group) {
-    console.log(group);
+    console.log(`<< ${group} >>`);
     _.each(_.propertyOf(groupedFoodListObj)(group), function(foodObj) {
       console.log(foodObj.name + ' ... $' + foodObj.price);
     });
@@ -163,7 +165,7 @@ printMenu = function(groupedFoodListObj) {
 };
 
 //updated version
-console.log("\n>> the changed version: \n");
+console.log("\n>> the changed version: \n\n");
 printMenu(query7);
 
 /* =====================
@@ -176,44 +178,31 @@ increases). Underscore has a 'templating' system that can be used to clean up th
 rendering process.
 
 Use _.template to render the price lines of the menu (Carrot ... $3.49).
-
-var compiled = _.template("<% print('Hello ' + epithet); %>");
-compiled({epithet: "stooge"});
-=> "Hello stooge"
-
 ===================== */
 
-/* START HERE
 //update again using _.template
-printMenu2 = function(groupedFoodListObj) {
-  _.each(_.keys(groupedFoodListObj), function(group) {
-    var foodGroup = group;
-    console.log(foodGroup);
-    var foodItems = [];
-    foodItems = _.propertyOf(groupedFoodListObj)(foodGroup);
-    console.log(foodItems);
-    var formatMenu =
-      '<% _.each( %>' +
-      '<%= foodGroup%>' +
-      '<% \', function(foodObj) { %>' +
-      '<% console.log(%>' +
-        '<%= foodObj.name %>' +
-        '... $' +
-        '<%= foodObj.price %>' +
-      '<%);}); %>';
-    _.template(formatMenu, foodItems);
-  });
-};
+var menuItems,
+  // TODO: why do they need to be defined outside of the scope, if the _.template is anyway working within the printMenu2 scope?
 
-    */
+  formatMenu = _.template(
+    "<% _.each(_.keys(menuItems), function (foodGroup) { %>" +
+    "\n" + "<< " + "<%= foodGroup %>" + " >>" + "\n" +
+    "<% _.each(_.propertyOf(menuItems)(foodGroup), function (foodObj) { %>" +
+    "<%= foodObj.name %>" + " ... $" + "<%= foodObj.price %>" + "\n" +
+    "<% }); }); %>"
+  ),
 
-  /*references:
-  http://www.kadrmasconcepts.com/blog/2012/02/20/underscore-js-template-revealed/
-  http://www.kadrmasconcepts.com/blog/2012/02/20/underscore-js-template-revealed/
-  https://stackoverflow.com/questions/22033727/iterating-through-objects-in-underscore-js-templates
-  http://underscorejs.org/#template
-  */
-
+  printMenu_temp = function(menu) {
+    menuItems = menu;
+    console.log(formatMenu());
+  };
 
 //updated version
-// printMenu2(query7);
+console.log("\n>> if using _.template: \n\n");
+printMenu_temp(query7);
+
+/*references:
+http://www.kadrmasconcepts.com/blog/2012/02/20/underscore-js-template-revealed/
+https://stackoverflow.com/questions/22033727/iterating-through-objects-in-underscore-js-templates
+http://underscorejs.org/#template
+*/
