@@ -33,16 +33,82 @@
 ===================== */
 
 // Use the data source URL from lab 1 in this 'ajax' function:
-var downloadData = $.ajax("http://");
+var downloadData = $.ajax("https://raw.githubusercontent.com/aakims/OST4GIS-week4/master/data/syriaRefugeeSites2016.csv").then(function (res) {console.log(res); return res;});
 
 // Write a function to prepare your data (clean it up, organize it as you like, create fields, etc)
-var parseData = function() {};
+
+// converting csv to json with added ObjectID field
+// http://techslides.com/convert-csv-to-json-in-javascript
+var csvToJson = function(csvData) {
+  var dataRows = csvData.split("\n");
+  var jsonReady = [];
+  var keys = "ObjectID" + "," + dataRows[0];
+  keys = dataRows[0].split(",");
+
+  for (var rowIndex = 1; rowIndex < dataRows.length; rowIndex++) {
+    var dataObj = {};
+    var objID = rowIndex;
+    var currentRow = rowIndex + "," + dataRows[rowIndex];
+    currentRow = dataRows[rowIndex].split(",");
+
+    for (var colIndex = 0; colIndex < keys.length; colIndex++) {
+      dataObj[keys[colIndex]] = currentRow[colIndex];
+    }
+
+    jsonReady.push(dataObj);
+  }
+
+  return JSON.parse(JSON.stringify(jsonReady));
+};
+
+// only selecting a few useful fields + omit rows that are missing location data
+
+//TODO: START HERE
+var fieldsToKeep = ["ObjectID", "Country","Designation","AdministrativeDivision", "Name", "Lat","Long","fips"];
+
+// tried chaining and played around with 'return' placement within pickAndClean function. Confirmed that during the code execution I do get a json data, but consle.log(parsed) keeps returning undefined; so I guess something isn't working right here. 
+var pickAndClean = function(jsonObj) {
+return  _.pick(jsonObj, function(key) {
+    return _.contains(fieldsToKeep, key);
+  });
+  /*
+  jsonObj = _.omit(jsonObj, function(value) {
+    return (jsonObj.Country === "Turkey");
+  });
+  return jsonObj; */
+};
+
+
+var parseData = function(csvData) {
+  var jsonData = csvToJson(csvData);
+  console.log(jsonData);
+  pickAndClean(jsonData);
+};
 
 // Write a function to use your parsed data to create a bunch of marker objects (don't plot them!)
-var makeMarkers = function() {};
+
+// object style specifications
+var popupText = function(jsonObj) {
+    return "<h4>" + jsonObj.Name + "," + jsonObj.Country + "</h4>" + "<h5>" +
+      "<ul><li>Designation:  " + jsonObj.Designation + "</li>" +
+      "<li>Administrative Division:  " + jsonObj.AdministrativeDivision + "</li></ul>";
+  };
+
+  var makeMarkers = function(jsonObj) {
+      return L.marker([jsonObj.Lat, jsonObj.Long], {
+          icon: centerIcon(jsonObj)
+        })
+        .bindPopup(popupText(jsonObj));
+    };
 
 // Now we need a function that takes this collection of markers and puts them on the map
-var plotMarkers = function() {};
+var plotMarkers = function(json) {
+  _.each(json, function(jsonObj) {
+    var jsonMarkers = makeMarkers(jsonObj);
+    L.layerGroup().addLayer(jsonMarkers);
+  });
+  L.layerGroup().addTo(map);
+};
 
 // At this point you should see a bunch of markers on your map.
 // Don't continue on until you can make them appear!
@@ -93,6 +159,7 @@ var Stamen_TonerLite = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/ton
 
 downloadData.done(function(data) {
   var parsed = parseData(data);
+  console.log(parsed);
   var markers = makeMarkers(parsed);
   plotMarkers(markers);
   removeMarkers(markers);
